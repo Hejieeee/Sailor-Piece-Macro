@@ -7,4 +7,4 @@ Features:
 - Auto Clicker Feature.
 
 Download:
-
+- [Download](https://github.com/Hejieeee/Sailor-Piece-Macro/blob/main/macro.exe)
