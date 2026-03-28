@@ -7,6 +7,4 @@ Features:
 - Auto Clicker Feature.
 
 Download:
--
-- After you click the link you will see download raw file. Click it.
-- Note: The windows will flag this as a potential virus. Just download it anyway.
+
