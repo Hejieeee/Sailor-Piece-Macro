@@ -7,6 +7,6 @@ Features:
 - Auto Clicker Feature.
 
 Download:
-- [Download the application](https://github.com/Hejieeee/Sailor-Piece-Macro/blob/main/SailorPieceMacro.exe)
+-
 - After you click the link you will see download raw file. Click it.
 - Note: The windows will flag this as a potential virus. Just download it anyway.
