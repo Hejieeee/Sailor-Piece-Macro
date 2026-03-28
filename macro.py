@@ -100,14 +100,30 @@ class AFKMacroApp:
         self.is_running = not self.is_running
         
         if self.is_running:
+            # 1. Grab all UI settings securely on the MAIN thread before starting
+            try:
+                self.active_keys = list(self.keys_entry.get().strip())[:5]
+                self.active_key_delay = max(1, int(self.key_delay_entry.get())) / 1000.0
+                self.active_click_delay = max(1, int(self.click_delay_entry.get())) / 1000.0
+                self.active_do_click = self.auto_clicker_var.get()
+            except ValueError:
+                # Failsafe if the user left a box blank or typed letters in a number box
+                self.active_keys = []
+                self.active_key_delay = 0.1
+                self.active_click_delay = 0.1
+                self.active_do_click = False
+
             self.status_indicator.config(bg="green")
             self.status_label.config(text="Status: ON")
             self.runtime_seconds = 0
             self.update_timer()
             
-            # Start macro thread
-            self.macro_thread = threading.Thread(target=self.run_macro, daemon=True)
-            self.macro_thread.start()
+            # Start TWO separate threads so they don't bottleneck each other
+            self.key_thread = threading.Thread(target=self.run_keys, daemon=True)
+            self.click_thread = threading.Thread(target=self.run_clicks, daemon=True)
+            
+            self.key_thread.start()
+            self.click_thread.start()
         else:
             self.status_indicator.config(bg="red")
             self.status_label.config(text="Status: OFF")
@@ -118,28 +134,28 @@ class AFKMacroApp:
             self.runtime_seconds += 1
             self.root.after(1000, self.update_timer)
 
-    def run_macro(self):
+    # Thread 1: Handles ONLY keyboard presses
+    def run_keys(self):
         while self.is_running:
-            try:
-                # Get settings safely
-                keys_to_press = list(self.keys_entry.get().strip())[:5] # Max 5 characters
-                key_delay = max(1, int(self.key_delay_entry.get())) / 1000.0
-                click_delay = max(1, int(self.click_delay_entry.get())) / 1000.0
-                do_click = self.auto_clicker_var.get()
+            if not self.active_keys:
+                time.sleep(0.1)  # Prevent CPU hogging if no keys are assigned
+                continue
+                
+            for key in self.active_keys:
+                if not self.is_running: break
+                keyboard.send(key)
+                time.sleep(self.active_key_delay)
 
-                # Execute Keys
-                for key in keys_to_press:
-                    if not self.is_running: break
-                    keyboard.send(key)
-                    time.sleep(key_delay)
-
-                # Execute Click
-                if do_click and self.is_running:
-                    pyautogui.click()
-                    time.sleep(click_delay)
-
-            except ValueError:
-                # Handle empty or invalid number entries
+    # Thread 2: Handles ONLY mouse clicks
+    def run_clicks(self):
+        while self.is_running:
+            if self.active_do_click:
+                pyautogui.mouseDown()
+                time.sleep(0.03)  # Gives the game engine time to register the press
+                pyautogui.mouseUp()
+                time.sleep(self.active_click_delay)
+            else:
+                # If clicking is disabled, just sleep briefly so the loop doesn't freeze the app
                 time.sleep(0.1)
 
 if __name__ == "__main__":
