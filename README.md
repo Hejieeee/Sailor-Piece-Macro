@@ -8,3 +8,4 @@ Features:
 
 Download:
 - [Download](https://github.com/Hejieeee/Sailor-Piece-Macro/blob/main/macro.exe)
+- Note: Windows may flag this as the macro uses pydirectinput and keyboard packages. Just run it anyway.
